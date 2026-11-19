@@ -1,0 +1,2 @@
+-r requirements.txt
+# hiwonder及底层驱动依赖由TonyPi平台环境提供，不通过同名PyPI包替代。

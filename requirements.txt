@@ -1,0 +1,6 @@
+# 依赖清单，不是复现锁定文件。PyTorch须按个人电脑/树莓派的平台安装适用构建。
+numpy>=1.23.5,<2
+torch>=2.1
+sounddevice>=0.4.6
+soundfile>=0.12.1
+tqdm>=4.66
