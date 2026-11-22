@@ -1,31 +1,48 @@
-# 机器人音乐识别与动作控制
+# On-device music recognition for a dancing robot
 
-## On-Device Music Recognition for a Dancing Robot
+[中文说明](#中文说明)
 
-This competition project uses a microphone and a Raspberry Pi 5 to recognize
-five songs and trigger the corresponding dance routine on a TonyPi robot.
-A sixth class represents background noise.
+A TonyPi bipedal robot listens through a microphone connected to a Raspberry Pi 5 and selects a dance routine for one of five songs. I built the audio classifier and the software that turns its predictions into motion commands. My teammates choreographed the dances. Our team earned first prize (third place) at the 2025 Chinese Robot Skills Competition.
 
-### My contribution
+## From microphone input to a dance routine
 
-- **Model training:** I prepared the song and noise recordings, split the audio
-  into clips, and trained a PyTorch CNN on log-Mel spectrograms on my PC.
-- **Streaming inference:** I deployed the classifier to a Raspberry Pi 5 and
-  smoothed predictions across audio windows before triggering a routine.
-- **Robot integration:** I connected the recognition output to the dance
-  scripts and handled routine interruption and the robot's return to its
-  neutral pose. My teammates created the choreography, and the robot SDK
-  was supplied by the manufacturer.
+I prepared clips from song and background recordings, computed log-Mel spectrograms, and trained a six-class convolutional neural network in PyTorch on a PC. The sixth class represents ambient noise, so the classifier can identify input outside the five target songs.
 
-### What you can try
+On the Pi, overlapping audio windows yield successive predictions. The decision logic smooths the scores and waits for repeated evidence before selecting a song. I integrated the classifier with the dance scripts and handled interruption and return to a neutral pose through the vendor SDK. The competition configuration locks a selection for 45 seconds to keep the routine stable; this also delays responses to a change of song during that interval.
 
-With a microphone and PortAudio configured, `inference/listen.py` runs the
-classifier and prints its predictions. It can be used independently of the
-robot. The hardware-independent tests are in `tests/`.
+| Follow the implementation | What to look for |
+| --- | --- |
+| [Clip preparation](training/prepare_data.py) and [training](training/train.py) | Source-recording groups, audio augmentation, model architecture and training loop |
+| [Microphone inference](inference/listen.py) | Audio capture, feature extraction, score smoothing and song decisions |
+| [Robot controller](robot/music_control.py) | Mapping a decision to an external routine and managing its process |
+| [Competition checkpoint](models/music_classifier.pt) and [checksum](models/SHA256SUMS) | The saved parameters used by the inference examples |
 
-This repository was assembled from the competition code. Selected regression
-tests have been run; end-to-end testing of this release on the robot is
-still pending.
+## Try it on a computer
+
+From the repository root, use a Python environment with a working microphone, PortAudio and a compatible PyTorch installation. The following command starts the **audio-only preview** and prints recognition decisions. It can run independently of the robot.
+
+```bash
+python -m pip install -r requirements.txt
+python inference/listen.py --ckpt models/music_classifier.pt
+```
+
+The target song labels are `renshi`, `dream`, `aoteman`, `amigo` and `wuren`; the background label is `noises`. For training on your own recordings or connecting the Pi to a TonyPi, see the [deployment guide (Chinese)](docs/deployment.md). Robot motion requires the vendor's SDK and the team's external choreography scripts and action library.
+
+## Tests and interpretation
+
+Run the [four hardware-independent tests](tests/test_portfolio.py) from the repository root. They check source-recording separation and training-only noise selection, the saved model checksum, and how the controller handles present or missing dance scripts. UTF-8 mode also supports the controller's console output on Windows.
+
+```bash
+python -X utf8 -m unittest discover -s tests -v
+```
+
+This release was assembled from competition materials. During preparation I found that the original augmentation pipeline could draw background noise from any split. The published training code limits noise sampling to the training split; the supplied checkpoint predates that correction. Measuring generalization would require retraining and evaluating on independent recordings. The tests above cover software logic; an end-to-end run of this release on the robot and measurements of accuracy and response time are outstanding.
+
+[Engineering notes (Chinese)](docs/engineering-notes.md) · [Team contributions and third-party components](THIRD_PARTY.md)
+
+## 中文说明
+
+### 机器人音乐识别与动作控制
 
 基于树莓派5与TonyPi平台的比赛项目，通过自行接入的麦克风采集音频，完成音乐类别识别与机器人动作调用。**模型在个人电脑上训练，树莓派运行推理与控制程序。** 本仓库由比赛材料整理，保留可解释的核心实现，并标明硬件与队友模块的边界。
 
