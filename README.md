@@ -1,5 +1,32 @@
 # 机器人音乐识别与动作控制
 
+## On-Device Music Recognition for a Dancing Robot
+
+This competition project uses a microphone and a Raspberry Pi 5 to recognize
+five songs and trigger the corresponding dance routine on a TonyPi robot.
+A sixth class represents background noise.
+
+### My contribution
+
+- **Model training:** I prepared the song and noise recordings, split the audio
+  into clips, and trained a PyTorch CNN on log-Mel spectrograms on my PC.
+- **Streaming inference:** I deployed the classifier to a Raspberry Pi 5 and
+  smoothed predictions across audio windows before triggering a routine.
+- **Robot integration:** I connected the recognition output to the dance
+  scripts and handled routine interruption and the robot's return to its
+  neutral pose. My teammates created the choreography, and the robot SDK
+  was supplied by the manufacturer.
+
+### What you can try
+
+With a microphone and PortAudio configured, `inference/listen.py` runs the
+classifier and prints its predictions. It can be used independently of the
+robot. The hardware-independent tests are in `tests/`.
+
+This repository was assembled from the competition code. Selected regression
+tests have been run; end-to-end testing of this release on the robot is
+still pending.
+
 基于树莓派5与TonyPi平台的比赛项目，通过自行接入的麦克风采集音频，完成音乐类别识别与机器人动作调用。**模型在个人电脑上训练，树莓派运行推理与控制程序。** 本仓库由比赛材料整理，保留可解释的核心实现，并标明硬件与队友模块的边界。
 
 ## 我的工作
